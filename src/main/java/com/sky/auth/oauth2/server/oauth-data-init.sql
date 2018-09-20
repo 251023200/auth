@@ -1,0 +1,1 @@
+insert into oauth_client_details(client_id,client_secret,authorized_grant_types,access_token_validity,refresh_token_validity,scope) values('client_1','123456','refresh_token,password',1800,3600,'all');

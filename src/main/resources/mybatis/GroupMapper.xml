@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.auth.permission.dao.GroupDao">
+
+	<!-- Pms权限管理：部门表 -->
+	<sql id="group"> group </sql>
+
+	<resultMap id="beanMap" type="com.sky.auth.permission.domain.Group">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR"  />
+		<result column="description" property="description" jdbcType="VARCHAR"  />
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="com.sky.auth.permission.domain.Group">
+		insert into
+		<include refid="group" />
+		(id,version,status,create_time, code,name,description)
+		values
+		(#{id},0,#{status}, #{createTime},#{code},#{name},#{description})
+	</insert>
+
+	<select id="getById" parameterType="String" resultMap="beanMap">
+		select * from
+		<include refid="group" />
+		where id = #{id}
+	</select>
+	
+	<select id="getGroupsByName" parameterType="com.sky.auth.permission.domain.Group" resultMap="beanMap">
+	    select * from 
+	    <include refid="group" />
+	    where name=#{name}
+	</select>
+	
+	<select id="getGroupByCode" parameterType="com.sky.auth.permission.domain.Group" resultMap="beanMap">
+	    select * from 
+	    <include refid="group" />
+	    where code=#{code}
+	</select>
+	
+	<update id="update" parameterType="com.sky.auth.permission.domain.Group">
+		update
+		<include refid="group" />
+		<trim prefix="set" suffixOverrides=",">
+			version = #{version}+1,
+  			<if test="status!=null">status=#{status},</if>
+  			<if test="name!=null">name=#{name},</if>
+  			<if test="code!=null">code=#{code},</if>
+  			<if test="description!=null">description=#{description},</if>
+ 		</trim>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+
+	<delete id="deleteById" parameterType="String">
+		delete from
+		<include refid="group"/>
+		where id = #{id}
+	</delete>
+	
+	<delete id="deleteByIds">
+		delete from
+		<include refid="group" />
+		where id in 
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">  
+ 		 #{item}  
+ 		 </foreach>
+	</delete>
+	
+	<delete id="batchDelete" parameterType="String">
+		delete from
+		<include refid="group" />
+		where id in 
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+ 		 #{item.id}  
+ 		</foreach>
+	</delete>
+
+	<select id="listAll" resultMap="beanMap">
+		select * from
+		<include refid="group" />
+	</select>
+
+	<sql id="condition_sql">
+		<!-- Equal query -->
+		<if test="code != null and code != ''"> and code = #{code}</if>
+		<!-- Like query -->
+		<if test="name != null and name != ''"> and name like CONCAT(CONCAT('%', #{name}), '%')</if>
+	</sql>
+	
+	<select id="search" parameterType="com.sky.auth.permission.domain.Group" resultMap="beanMap">
+		select * from 
+		<include refid="group" />
+		<where>
+			<include refid="condition_sql" />
+		</where>
+	</select>
+
+</mapper>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.auth.permission.dao.UserPermissionDao">
+
+	<!-- Pms权限管理：操作员表 -->
+	<sql id="user"> user </sql>
+	<sql id="user_role"> user_role </sql>
+	<sql id="role"> role </sql>
+
+	<resultMap id="beanMap" type="com.sky.auth.permission.domain.Permission">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="resource_id" property="resourceId" jdbcType="VARCHAR" />
+		<result column="operation_id" property="operationId" jdbcType="VARCHAR" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR"  />
+		<result column="description" property="description" jdbcType="VARCHAR"  />
+	</resultMap>
+	
+	<select id="getPermissionsById" parameterType="String" resultMap="beanMap">
+		select permission.* from user,user_role,role_permission,permission where user.id=user_role.user_id and user_role.role_id=role_permission.role_id and role_permission.permission_id=permission.id
+	</select>
+	
+	
+	
+</mapper>

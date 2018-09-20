@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.auth.permission.dao.UserRoleDao">
+
+	<!-- Pms权限管理：用户角色表 -->
+	<sql id="user_role"> user_role </sql>
+
+	<resultMap id="beanMap" type="com.sky.auth.permission.domain.UserRole">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="user_id" property="userId" jdbcType="VARCHAR" />
+		<result column="role_id" property="roleId" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<resultMap id="userBeanMap" type="com.sky.auth.permission.domain.User">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="user_no" property="userNo" jdbcType="VARCHAR" />
+		<result column="username" property="userName" jdbcType="VARCHAR" />
+		<result column="password" property="password" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR"  />
+		<result column="salt" property="salt" jdbcType="VARCHAR"  />
+	</resultMap>
+	
+	<resultMap id="roleBeanMap" type="com.sky.auth.permission.domain.Role">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<!-- <result column="parent_id" property="parentId" jdbcType="VARCHAR" /> -->
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR"  />
+		<result column="desc" property="desc" jdbcType="VARCHAR"  />
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="com.sky.auth.permission.domain.UserRole">
+		insert into
+		<include refid="user_role" />
+		(id,version,status,create_time,user_id,role_id)
+		values
+		(#{id},0,#{status},#{createTime},#{userId},#{roleId})
+	</insert>
+
+	<select id="getById" parameterType="String" resultMap="beanMap">
+		select * from
+		<include refid="user_role" />
+		where id = #{id}
+	</select>
+	
+	<select id="getByUserIdAndRoleId" parameterType="com.sky.auth.permission.domain.UserRole" resultMap="beanMap">
+	    select * from 
+	    <include refid="user_role" />
+	    where user_id=#{userId} and role_id=#{roleId}
+	</select>
+	
+	<delete id="deleteByUserIdAndRoleId">
+	    delete from 
+	    <include refid="user_role" />
+	    where user_id=#{userId} and role_id=#{roleId}
+	</delete>
+	
+	
+	<update id="updateById" parameterType="com.sky.auth.permission.domain.UserRole">
+		update
+		<include refid="user_role" />
+		<trim prefix="set" suffixOverrides=",">
+			version = #{version}+1,
+  			<if test="status!=null">status=#{status},</if>
+ 		</trim>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+
+	<delete id="deleteById" parameterType="String">
+		delete from
+		<include refid="user_role" />
+		where id = #{id}
+	</delete>
+	
+	<delete id="deleteByUserId" parameterType="String">
+		delete from
+		<include refid="user_role" />
+		where user_id=#{userId}
+	</delete>
+	
+	<select id="getUsersByRoleId" parameterType="String" resultMap="userBeanMap">
+		select user.* from user_role,user
+		where role_id = #{roleId} and user_role.user_id=user.id
+	</select>
+	
+	<select id="getRolesByUserId" parameterType="String" resultMap="roleBeanMap">
+		select role.* from user_role,role
+		where user_id = #{userId} and user_role.role_id=role.id
+	</select>
+	
+	<insert id="batchInsert" parameterType="com.sky.auth.permission.domain.UserRole">
+		insert into
+		<include refid="user_role" />
+		(id,version,status,create_time,user_id,role_id)
+		values
+		 <foreach collection ="list" item="userRole" index= "index" separator =",">
+		(#{userRole.id},0,#{userRole.status}, #{userRole.createTime},#{userRole.userId}, #{userRole.roleId})
+		</foreach >	
+	</insert>
+	
+	<delete id="batchDelete" parameterType="String">
+		delete from
+		<include refid="user_role" />
+		where id in 
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+ 		 #{item.id}  
+ 		</foreach>
+	</delete>
+
+	<select id="listAll" resultMap="beanMap">
+		select * from
+		<include refid="user_role" />
+	</select>
+	
+	<select id="searchRoles" resultMap="roleBeanMap">
+		select role.id as id,role.version as verion,role.create_time as create_time,role.status as status,role.code as code,role.name as name,role.description as description from user_role,role
+		where user_role.role_id=role.id and user_role.user_id=#{userId}
+		<include refid="condition_sql"/> 
+	</select>
+	
+	<select id="searchLeftRoles" resultMap="roleBeanMap">
+		select * 
+		from role
+		where id not in (select role_id from user_role where user_id=#{userId})
+		<include refid="condition_sql"/> 
+	</select>
+	
+	<sql id="condition_sql">
+		<!-- Equal query -->
+		<if test="role!=null and role.code != null and role.code != ''"> and code = #{role.code}</if>
+		<!-- Like query -->
+		<if test="role!=null and role.name != null and role.name != ''"> and name like CONCAT(CONCAT('%', #{role.name}), '%')</if>
+		<!-- Like query -->
+	</sql>
+
+</mapper>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.auth.permission.dao.RolePermissionDao">
+
+	<!-- Pms权限管理：部门表 -->
+	<sql id="role_permission"> role_permission </sql>
+
+	<resultMap id="beanMap" type="com.sky.auth.permission.domain.RolePermission">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="role_id" property="roleId" jdbcType="VARCHAR" />
+		<result column="permission_id" property="permissionId" jdbcType="VARCHAR" />
+		
+	</resultMap>
+	
+	<resultMap id="permissionBeanMap" type="com.sky.auth.permission.domain.Permission">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="resource_id" property="resourceId" jdbcType="VARCHAR" />
+		<result column="operation_id" property="operationId" jdbcType="VARCHAR" />
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR"  />
+		<result column="description" property="description" jdbcType="VARCHAR"  />
+	</resultMap>
+	
+	<resultMap id="roleBeanMap" type="com.sky.auth.permission.domain.Role">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<!-- <result column="parent_id" property="parentId" jdbcType="VARCHAR" /> -->
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR"  />
+		<result column="description" property="description" jdbcType="VARCHAR"  />
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="com.sky.auth.permission.domain.RolePermission">
+		insert into
+		<include refid="role_permission" />
+		(id,version,status,create_time, role_id,permission_id)
+		values
+		(#{id},0,#{status},#{createTime},#{roleId},#{permissionId})
+	</insert>
+	
+	<insert id="batchInsert" parameterType="com.sky.auth.permission.domain.RolePermission">
+		insert into
+		<include refid="role_permission" />
+		(id,version,status,create_time,role_id,permission_id)
+		values
+		 <foreach collection ="list" item="rolePermission" index= "index" separator =",">
+		(#{rolePermission.id},0,#{rolePermission.status}, #{rolePermission.createTime},#{rolePermission.roleId}, #{rolePermission.permissionId})
+		</foreach >	
+	</insert>
+	
+	
+	<select id="getById" parameterType="String" resultMap="beanMap">
+		select * from
+		<include refid="role_permission" />
+		where id = #{id}
+	</select>
+	
+	<select id="getByRoleIdAndPermissionId" parameterType="com.sky.auth.permission.domain.RolePermission" resultMap="beanMap">
+	    select * from 
+	    <include refid="role_permission" />
+	    where role_id=#{roleId} and permission_id=#{permissionId}
+	</select>
+	
+	<delete id="deleteByRoleIdAndPermissionId" parameterType="com.sky.auth.permission.domain.RolePermission">
+	    delete from 
+	    <include refid="role_permission" />
+	    where role_id=#{roleId} and permission_id=#{permissionId}
+	</delete>
+	
+	<!-- <update id="updateById" parameterType="com.sky.auth.permission.domain.RolePermission">
+		update
+		<include refid="role_permission" />
+		<trim prefix="set" suffixOverrides=",">
+			version = #{version}+1,
+ 			<if test="creater!=null">creater=#{creater},</if>
+  			<if test="createTime!=null">create_time=#{createTime},</if>
+  			<if test="editor!=null">editor=#{editor},</if>
+ 			<if test="editTime!=null">edit_time=#{editTime},</if>
+  			<if test="remark!=null">remark=#{remark},</if>
+  			<if test="status!=null">status=#{status},</if>
+ 		</trim>
+		<where>
+			id = #{id}
+		</where>
+	</update> -->
+
+	<delete id="deleteById" parameterType="String">
+		delete from
+		<include refid="role_permission" />
+		where id = #{id}
+	</delete>
+	
+	<select id="getPermissionsByRoleId" parameterType="String" resultMap="permissionBeanMap">
+		select permission.* from role_permission,permission
+		where role_id = #{roleId} and role_permission.permission_id=permission.id
+	</select>
+	
+	<select id="getRolesByPermissionId" parameterType="String" resultMap="roleBeanMap">
+		select role.* from role_permission,role
+		where permission_id = #{permissionId} and role_permission.role_id=role.id
+	</select>
+	
+	<delete id="batchDelete" parameterType="String">
+		delete from
+		<include refid="role_permission" />
+		where id in 
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+ 		 #{item.id}  
+ 		</foreach>
+	</delete>
+
+	<select id="listAll" resultMap="beanMap">
+		select * from
+		<include refid="role_permission" />
+	</select>
+
+	<select id="searchPermissions" resultMap="permissionBeanMap">
+		select permission.id as id,permission.version as verion,permission.create_time as create_time,permission.status as status,permission.code as code,permission.name as name,permission.description as description 
+		from role_permission,permission
+		where role_permission.permission_id=permission.id and role_permission.role_id=#{roleId}
+		<include refid="condition_sql"/> 
+	</select>
+	
+	<select id="searchLeftPermissions" resultMap="permissionBeanMap">
+		select * 
+		from permission
+		where id not in (select permission_id from role_permission where role_id=#{roleId})
+		<include refid="condition_sql"/> 
+	</select>
+	
+	<sql id="condition_sql">
+		<!-- Equal query -->
+		<if test="permission!=null and permission.code != null and permission.code != ''"> and code = #{permission.code}</if>
+		<!-- Like query -->
+		<if test="permission!=null and permission.name != null and permission.name != ''"> and name like CONCAT(CONCAT('%', #{permission.name}), '%')</if>
+		<!-- Like query -->
+	</sql>
+
+	
+
+</mapper>

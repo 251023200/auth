@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.auth.permission.dao.ResourceTypeDao">
+
+	<sql id="resourceType"> resource_type </sql>
+	
+	<resultMap id="beanMap" type="com.sky.auth.permission.domain.ResourceType">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="parent_id" property="parentId" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR"  />
+		<result column="icon" property="icon" jdbcType="VARCHAR"  />
+		<result column="code" property="code" jdbcType="VARCHAR"  />
+		<result column="is_leaf" property="isLeaf" jdbcType="VARCHAR"  />
+		<result column="seq" property="seq" jdbcType="INTEGER"  />
+		<result column="level" property="level" jdbcType="INTEGER"  />
+		<result column="active" property="active" jdbcType="INTEGER"  />
+		<result column="remark" property="remark" jdbcType="VARCHAR"  />
+	</resultMap>
+	
+	<insert id="insert" parameterType="com.sky.auth.permission.domain.ResourceType">
+		insert into
+		<include refid="resourceType" />
+		(id,version,status,create_time,name,icon,code,parent_id,seq,is_leaf,level,active,remark) values
+		( #{id},0,#{status},#{createTime},
+		#{name,jdbcType=VARCHAR},
+		#{icon,jdbcType=VARCHAR},
+		#{code,jdbcType=VARCHAR},
+		#{parentId,jdbcType=VARCHAR},
+		#{seq,jdbcType=INTEGER},
+		#{isLeaf,jdbcType=VARCHAR},
+		#{level,jdbcType=INTEGER},
+		#{active,jdbcType=INTEGER},
+		#{remark,jdbcType=INTEGER}
+		)
+	</insert>
+
+	<select id="getById" parameterType="String" resultMap="beanMap">
+		select * from
+		<include refid="resourceType" />
+		where id = #{id}
+	</select>
+	
+	<update id="update" parameterType="com.sky.auth.permission.domain.ResourceType">
+		update
+		<include refid="resourceType" />
+		<trim prefix="set" suffixOverrides=",">
+			version = #{version}+1,
+  			<if test="name!=null">name=#{name},</if>
+  			<if test="code!=null">code=#{code},</if>
+  			<if test="parentId!=null">parent_id=#{parentId},</if>
+  			<if test="seq!=null">seq=#{seq},</if>
+  			<if test="isLeaf!=null">is_leaf=#{isLeaf},</if>
+  			<if test="level!=null">level=#{level},</if>
+  			<if test="active!=null">active=#{active},</if>
+  			<if test="remark!=null">remark=#{remark},</if>
+ 		</trim>
+		where ID = #{id}
+	</update>
+
+	<delete id="deleteById" parameterType="String">
+		delete from
+		<include refid="resourceType" />
+		where ID = #{id}
+	</delete>
+	
+	<select id="listAll" resultMap="beanMap">
+		select * from
+		<include refid="resourceType" />
+	</select>
+	
+	
+	<select id="listByParentId" parameterType="String" resultMap="beanMap">
+		select * from
+		<include refid="resourceType" />
+		where parent_id = #{parentId}
+	</select>
+	
+	<!--  
+	<select id="getResourceTypesByUserId" parameterType="String" resultMap="beanMap">
+		select resourceType.* from user,user_role,role_resourceType,resourceType where user.id=#{userId} and user.id=user_role.user_id and user_role.role_id=role_resourceType.role_id and role_resourceType.resourceType_id=resourceType.id
+	</select>
+	-->
+	<!-- <select id="listByRoleIds" parameterType="string" resultType="com.sky.sperm.permission.entity.PmsResourceType">
+		select distinct * from (
+		select
+		m.id as "id",
+		m.version as "version",
+		m.parent_id as "parentId",
+		m.name as "name",
+		m.is_leaf as "isLeaf",
+		m.level as "level",
+		m.url as "url",
+		m.icon as "icon",
+		m.target_name as "targetName",
+		m.number as number
+		from
+		<include refid="pms_role" />
+		r
+		left join
+		<include refid="pms_role_resourceType" />
+		rm
+		on r.id = rm.role_id
+		left join
+		<include refid="pms_resourceType" />
+		m
+		on rm.resourceType_id = m.id
+		where r.id in
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">#{item}</foreach>
+		) as mt order by mt.number asc
+	</select> -->
+	
+	<!-- 
+    <select  id="listByRoleIds"  parameterType="string" resultType="com.sky.auth.permission.domain.ResourceType">
+      select DISTINCT 
+         pms_resourceType.id as "id",
+		pms_resourceType.version as "version",
+		pms_resourceType.parent_id as "parentId",
+		pms_resourceType.name as "name",
+		pms_resourceType.is_leaf as "isLeaf",
+		pms_resourceType.level as "level",
+		pms_resourceType.url as "url",
+		pms_resourceType.icon as "icon",
+		pms_resourceType.target_name as "targetName",
+		pms_resourceType.number as number
+		
+		 from pms_role,pms_role_permission,pms_resourceType
+		
+		where pms_role.id=pms_role_permission.role_id
+		 and pms_role_permission.permission_id=pms_resourceType.id
+		
+		and pms_role.id in
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">#{item}</foreach>
+		order by pms_resourceType.number
+    </select>
+    -->
+</mapper>

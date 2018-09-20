@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.auth.permission.dao.RoleDao">
+
+	<!-- Pms权限管理：角色表 -->
+	<sql id="role"> role </sql>
+
+	<resultMap id="beanMap" type="com.sky.auth.permission.domain.Role">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<!-- <result column="parent_id" property="parentId" jdbcType="VARCHAR" /> -->
+		<result column="code" property="code" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR"  />
+		<result column="description" property="description" jdbcType="VARCHAR"  />
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="com.sky.auth.permission.domain.Role">
+		insert into
+		<include refid="role" />
+		(id,version,status,create_time, code,name,description)
+		values
+		(#{id},0,#{status}, #{createTime},#{code},#{name},#{description})
+	</insert>
+
+	<select id="getById" parameterType="String" resultMap="beanMap">
+		select * from
+		<include refid="role" />
+		where id = #{id}
+	</select>
+	
+	<select id="getRolesByName" parameterType="com.sky.auth.permission.domain.Role" resultMap="beanMap">
+	    select * from 
+	    <include refid="role" />
+	    where name=#{name}
+	</select>
+	
+	<select id="getRoleByCode" parameterType="com.sky.auth.permission.domain.Role" resultMap="beanMap">
+	    select * from 
+	    <include refid="role" />
+	    where code=#{code}
+	</select>
+	
+	<update id="update" parameterType="com.sky.auth.permission.domain.Role">
+		update
+		<include refid="role" />
+		<trim prefix="set" suffixOverrides=",">
+			version = #{version}+1,
+  			<if test="status!=null">status=#{status},</if>
+  			<if test="name!=null">name=#{name},</if>
+  			<if test="code!=null">code=#{code},</if>
+  			<if test="description!=null">description=#{description},</if>
+ 		</trim>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+
+	<delete id="deleteById" parameterType="String">
+		delete from
+		<include refid="role" />
+		where id = #{id}
+	</delete>
+	
+	<delete id="deleteByIds">
+		delete from
+		<include refid="role" />
+		where id in 
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">  
+ 		 #{item}  
+ 		 </foreach>
+	</delete>
+	
+	<delete id="batchDelete" parameterType="String">
+		delete from
+		<include refid="role" />
+		where id in 
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+ 		 #{item.id}  
+ 		</foreach>
+	</delete>
+
+	<select id="listAll" resultMap="beanMap">
+		select * from
+		<include refid="role" />
+	</select>
+
+	<sql id="condition_sql">
+		<!-- Equal query -->
+		<if test="code != null and code != ''"> and code = #{code}</if>
+		<!-- Like query -->
+		<if test="name != null and name != ''"> and name like CONCAT(CONCAT('%', #{name}), '%')</if>
+	</sql>
+
+	<select id="search" parameterType="com.sky.auth.permission.domain.Role" resultMap="beanMap">
+		select * from 
+		<include refid="role" />
+		<where>
+			<include refid="condition_sql" />
+		</where>
+	</select>
+	
+
+</mapper>

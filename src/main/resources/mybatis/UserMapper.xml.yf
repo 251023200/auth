@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.auth.permission.dao.UserDao">
+
+	<!-- Pms权限管理：操作员表 -->
+	<sql id="user"> user </sql>
+	<sql id="user_role"> user_role </sql>
+	<sql id="role"> role </sql>
+
+	<resultMap id="beanMap" type="com.sky.auth.permission.domain.User">
+		<id column="id" property="id" jdbcType="VARCHAR" />
+		<result column="version" property="version" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="user_no" property="userNo" jdbcType="VARCHAR" />
+		<result column="username" property="userName" jdbcType="VARCHAR" />
+		<result column="password" property="password" jdbcType="VARCHAR" />
+		<result column="name" property="name" jdbcType="VARCHAR"  />
+		<result column="email" property="email" jdbcType="VARCHAR"  />
+		<result column="telephone" property="telephone" jdbcType="VARCHAR"  />
+		<result column="mobile_telephone" property="mobileTelephone" jdbcType="VARCHAR"  />
+		<result column="salt" property="salt" jdbcType="VARCHAR"  />
+		
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="com.sky.auth.permission.domain.User">
+		insert into
+		<include refid="user" />
+		(id,version,status,create_time, user_no, username,password,name,salt)
+		values
+		(#{id},0,#{status}, #{createTime}, #{userNo},#{userName},#{password},#{name},#{salt})
+	</insert>
+
+	<select id="getById" parameterType="String" resultMap="beanMap">
+		select * from
+		<include refid="user" />
+		where id = #{id}
+	</select>
+	
+	<select id="getUserByUserNameAndPassword" parameterType="String" resultMap="beanMap">
+	    select * from 
+	    <include refid="user" />
+	    where username=#{userName} and password=#{password}
+	</select>
+	
+	<update id="update" parameterType="com.sky.auth.permission.domain.User">
+		update
+		<include refid="user" />
+		<trim prefix="set" suffixOverrides=",">
+			version = #{version}+1,
+			<if test="userNo!=null">user_no=#{userNo},</if>
+			<if test="userName!=null">username=#{userName},</if>
+  			<if test="status!=null">status=#{status},</if>
+  			<if test="password!=null">password=#{password},</if>
+  			<if test="name!=null">name=#{name},</if>
+  			<if test="salt!=null">salt=#{salt},</if>
+  			<if test="email!=null">email=#{email},</if>
+  			<if test="telephone!=null">telephone=#{telephone},</if>
+  			<if test="mobileTelephone!=null">mobile_telephone=#{mobileTelephone},</if>
+ 		</trim>
+		<where>
+			id = #{id}
+		</where>
+	</update>
+
+	<delete id="deleteById" parameterType="String">
+		delete from
+		<include refid="user" />
+		where id = #{id}
+	</delete>
+	
+	<delete id="deleteByIds">
+		delete from
+		<include refid="user" />
+		where id in 
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">  
+ 		 #{item}  
+ 		 </foreach>
+	</delete>
+	
+	<!-- <delete id="batchDelete" parameterType="String">
+		delete from
+		<include refid="user" />
+		where id in 
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">  
+ 		 #{item.id}  
+ 		</foreach>
+	</delete> -->
+
+	<select id="listAll" resultMap="beanMap">
+		select * from
+		<include refid="user" />
+	</select>
+
+	<sql id="condition_sql">
+		<!-- Equal query -->
+		<if test="userNo != null and userNo != ''"> and user_no = #{userNo}</if>
+		<if test="userName!=null and userName != ''"> and username = #{userName}</if>
+		<!-- <if test="status != null and status != ''"> and status = #{status}</if>  -->
+		<!-- <if test="type != null and type != ''"> and type = #{type}</if> -->
+		<!-- Like query -->
+		 <if test="name != null and name != ''"> and name like CONCAT(CONCAT('%', #{name}), '%')</if>
+	</sql>
+
+	
+	<select id="listByRoleId" parameterType="String" resultMap="beanMap">
+		select user.* from user,user_role where user.id=user_role.user_id and user_role.role_id=#{roleId}
+	</select>
+	
+	<select id="search" parameterType="com.sky.auth.permission.domain.User" resultMap="beanMap">
+		select * from 
+		<include refid="user" />
+		<where>
+			<include refid="condition_sql" />
+		</where>
+	</select>
+	
+	
+	
+    <!--  
+	<select id="listPage" parameterType="java.util.Map" resultMap="beanMap">
+		select * from 
+		<include refid="user" />
+		<where>
+			<include refid="condition_sql" />
+		</where>
+		order by create_time desc
+		limit #{page.offset},#{page.limit}
+	</select>
+
+	<select id="listPageCount" parameterType="com.sky.auth.permission.domain.User" resultType="long">
+		select count(1) from 
+		<include refid="user" />
+		<where>
+			<include refid="condition_sql" />
+		</where>
+	</select>
+	-->
+</mapper>

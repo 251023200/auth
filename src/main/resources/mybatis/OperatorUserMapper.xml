@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sky.auth.permission.dao.OperatorUserDao">
+
+  <resultMap id="beanMap" type="com.sky.auth.permission.domain.OperatorUser">
+    <result column="orgid" jdbcType="VARCHAR" property="orgid" />
+    <result column="userid" jdbcType="VARCHAR" property="userid" />
+    <result column="type" jdbcType="VARCHAR" property="type" />
+  </resultMap>
+ 
+  <insert id="insert" parameterType="com.sky.auth.permission.domain.OperatorUser">
+    
+    insert into operator_user (orgid, userid, type
+      )
+    values (#{orgid,jdbcType=VARCHAR}, #{userid,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}
+      )
+  </insert>
+  <select id="getByUserID" resultMap="beanMap" parameterType="string">
+      select * from operator_user where userid = #{userid,jdbcType=VARCHAR}
+  </select>
+ 
+  
+  <update id="updateByUserID" parameterType="com.sky.auth.permission.domain.OperatorUser">
+   
+    update operator_user
+    set orgid = #{orgid,jdbcType=VARCHAR},
+     
+      type = #{type,jdbcType=VARCHAR}
+    where
+       userid = #{userid,jdbcType=VARCHAR}
+  </update>
+  <delete id="deleteByUserID" parameterType="string">
+     delete from operator_user where userid = #{id}
+  </delete>
+  
+</mapper>
